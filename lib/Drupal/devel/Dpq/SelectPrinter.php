@@ -24,13 +24,7 @@ abstract class SelectPrinter extends Select {
     $text = '';
 
     // Prepare the query.
-    // @todo Is this necessary?
-    $query->preExecute();
-
-    // Compile the query, if it is not compiled yet.
-    if (!$query->compiled()) {
-      $query->compile($query->connection, $query);
-    }
+    self::prepareQuery($query);
 
     // SELECT
     $text .= "\n" . 'SELECT';
@@ -155,15 +149,8 @@ abstract class SelectPrinter extends Select {
       elseif ($table['table'] instanceof Select) {
         // The table is a subquery.
         $subquery = $table['table'];
-
         // Prepare the subquery.
-        // @todo Is this necessary?
-        $subquery->preExecute();
-
-        // Compile the subquery, if it is not compiled yet.
-        if (!$query->compiled()) {
-          $query->compile($query->connection, $query);
-        }
+        self::prepareQuery($subquery);
         $text .= '(';
         $text .= Util::indent(self::printSelectQuery($subquery));
         $text .= "\n" . ')';
@@ -187,6 +174,22 @@ abstract class SelectPrinter extends Select {
     }
 
     return $text;
+  }
+
+  /**
+   * @param Select $query
+   */
+  public static function prepareQuery(Select $query) {
+
+    // Prepare the query, if it is not prepared yet.
+    if (!$query->isPrepared()) {
+      $query->preExecute();
+    }
+
+    // Compile the query, if it is not compiled yet.
+    if (!$query->compiled()) {
+      $query->compile($query->connection, $query);
+    }
   }
 
 }
