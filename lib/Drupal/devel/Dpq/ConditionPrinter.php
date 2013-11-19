@@ -10,16 +10,16 @@ abstract class ConditionPrinter extends Condition {
   /**
    * Print the WHERE information of a query.
    *
-   * @param IndentedText $out
-   *   An object that we can write to.
    * @param Condition $cond
    *   A database condition object we want to print.
+   *
+   * @return string
    */
-  public static function printCondition($out, $cond) {
+  public static function printCondition(Condition $cond) {
     $printed = trim($cond);
     if (!empty($cond->arguments)) {
       $printed = strtr($printed, $cond->arguments);
     }
-    $out->printList($printed, ' AND');
+    return Util::printList($printed, ' AND');
   }
 }

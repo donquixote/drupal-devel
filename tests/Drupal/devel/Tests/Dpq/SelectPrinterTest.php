@@ -28,9 +28,7 @@ class SelectPrinterTest extends UnitTestCase {
    * @dataProvider providerTestSelectPrinter
    */
   public function testSelectPrinter(Select $query, $expected) {
-    $text = '';
-    $indented_text = new IndentedText($text);
-    SelectPrinter::printSelectQuery($indented_text, $query);
+    $text = SelectPrinter::printSelectQuery($query);
     $this->assertEquals($expected, $text);
   }
 
