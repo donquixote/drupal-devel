@@ -40,6 +40,7 @@ function devel_help($section) {
  * Implements hook_menu().
  */
 function devel_menu() {
+
   // Note: we can't dynamically append destination to querystring.
   // Do so at theme layer. Fix in D7?
   $items['devel/cache/clear'] = array(
@@ -1459,7 +1460,7 @@ function dargs($always = TRUE) {
  *
  * @param object $query
  *   An object that implements the SelectInterface interface.
- * @param string $return
+ * @param bool|string $return
  *   Whether to return the string. Default is FALSE, meaning to print it
  *   and return $query instead.
  * @param string $name
@@ -1467,9 +1468,31 @@ function dargs($always = TRUE) {
  *
  * @return object|string
  *   The $query object, or the query string if $return was TRUE.
+ *
+ * @throws Drupal\devel\Dpq\DpqException
  */
 function dpq($query, $return = FALSE, $name = NULL) {
-  if (user_access('access devel information')) {
+  if (!user_access('access devel information')) {
+    return ($return ? NULL : $query);
+  }
+  elseif ($query instanceof \Drupal\Core\Entity\Query\QueryInterface) {
+    if ($return) {
+      throw new \Drupal\devel\Dpq\DpqException('dpq() on entity queries cannot be used with the $return option.');
+    }
+    // Set a tag, so the query can be printed on hook_query_TAG_alter() when it
+    // is executed.
+    $query->addTag('devel_dpq');
+    if (isset($name)) {
+      $query->addMetaData('devel_dpq_name', $name);
+    }
+    return $query;
+  }
+  elseif ($query instanceof \Drupal\Core\Database\Query\Select) {
+    // Produce a special formatted output.
+    $sql = \Drupal\devel\Dpq\SelectPrinter::printSelectQuery($query);
+  }
+  elseif (method_exists($query, '__toString')) {
+    // Use the __toString() method.
     if (method_exists($query, 'preExecute')) {
       $query->preExecute();
     }
@@ -1480,12 +1503,42 @@ function dpq($query, $return = FALSE, $name = NULL) {
       $quoted[$key] = is_null($val) ? 'NULL' : $connection->quote($val);
     }
     $sql = strtr($sql, $quoted);
-    if ($return) {
-      return $sql;
-    }
-    dpm($sql, $name);
   }
-  return ($return ? NULL : $query);
+  elseif (is_object($query)) {
+    $query_class = get_class($query);
+    throw new \Drupal\devel\Dpq\DpqException("dpq() cannot print a query of type $query_class.");
+  }
+  else {
+    $query_type = gettype($query);
+    throw new \Drupal\devel\Dpq\DpqException("dpq() cannot print a query of type $query_type.");
+  }
+
+  // Return a value, or print in the message area.
+  if ($return) {
+    return $sql;
+  }
+  dpm($sql, $name);
+  return $query;
+}
+
+/**
+ * Implements hook_query_TAG_alter()
+ *
+ * @param object $query
+ */
+function devel_query_devel_dpq_alter($query) {
+  if (!$query instanceof Drupal\Core\Database\Query\Select) {
+    // False alarm.
+    return;
+  }
+  if ($query->hasTag('devel_dpq_ongoing')) {
+    // Recursion detected.
+    return;
+  }
+  // Add a tag to prevent recursion.
+  $query->addTag('devel_dpq_ongoing');
+  $name = $query->getMetaData('devel_dpq_name');
+  dpq($query, FALSE, $name);
 }
 
 /**
