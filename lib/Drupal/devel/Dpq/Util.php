@@ -3,7 +3,9 @@
 
 namespace Drupal\devel\Dpq;
 
-
+/**
+ * Contains helper methods for string formatting.
+ */
 class Util {
 
   /**
@@ -43,4 +45,5 @@ class Util {
     $text = self::printList($list, $separator);
     return self::indent($text, $indent);
   }
+
 }

@@ -34,4 +34,5 @@ class MockPDO extends \PDO {
   public function getAttribute($attribute) {
     return isset($this->attributes[$attribute]) ? $this->attributes[$attribute] : NULL;
   }
-} 
+
+}

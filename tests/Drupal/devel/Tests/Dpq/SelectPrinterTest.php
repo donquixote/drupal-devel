@@ -3,9 +3,7 @@
 namespace Drupal\devel\Tests\Dpq;
 
 use Drupal\Core\Database\Query\Select;
-use Drupal\devel\Dpq\IndentedText;
 use Drupal\devel\Dpq\SelectPrinter;
-use Drupal\devel\Tests\Dpq\MockDatabaseConnection;
 use Drupal\Tests\UnitTestCase;
 
 class SelectPrinterTest extends UnitTestCase {
@@ -38,6 +36,8 @@ class SelectPrinterTest extends UnitTestCase {
   public function providerTestSelectPrinter() {
     $argument_combos = array();
     $connection = new MockDatabaseConnection();
+
+    // Build a nested query to test.
     $q_nested = new Select('aaa', 'a', $connection);
     $q_nested->fields('a', array('x', 'y', 'b_id'));
     $q_nested->condition('z', 5);
@@ -48,6 +48,8 @@ class SelectPrinterTest extends UnitTestCase {
     $q->fields('nested');
     $q->fields('b', array('width', 'height'));
     $q->orderBy('b.width', 'ASC');
+
+    // Expected output for this query.
     $expected = <<<'EOT'
 
 SELECT

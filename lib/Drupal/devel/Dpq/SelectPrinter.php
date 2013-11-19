@@ -5,6 +5,9 @@ namespace Drupal\devel\Dpq;
 use Drupal\Core\Database\Query\SelectInterface;
 use Drupal\Core\Database\Query\Select;
 
+/**
+ * Uses inheritance to access protected properties of Select queries.
+ */
 abstract class SelectPrinter extends Select {
 
   /**
@@ -185,4 +188,5 @@ abstract class SelectPrinter extends Select {
 
     return $text;
   }
+
 }

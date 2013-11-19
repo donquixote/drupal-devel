@@ -64,4 +64,5 @@ class MockDatabaseConnection extends Connection {
   public function nextId($existing_id = 0) {
     throw new \Exception("MockDatabaseQuery cannot execute queries.");
   }
-} 
+
+}

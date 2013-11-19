@@ -5,6 +5,9 @@ namespace Drupal\devel\Dpq;
 
 use Drupal\Core\Database\Query\Condition;
 
+/**
+ * Uses inheritance to access protected properties of Condition objects.
+ */
 abstract class ConditionPrinter extends Condition {
 
   /**
@@ -22,4 +25,5 @@ abstract class ConditionPrinter extends Condition {
     }
     return Util::printList($printed, ' AND');
   }
+
 }
